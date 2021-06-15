@@ -1,5 +1,4 @@
 import java.io.*;
-import java.util.Scanner;
 
 public class CacheSimulator {
 
@@ -11,22 +10,36 @@ public class CacheSimulator {
     public static void main(String[] args) throws IOException {
         String[] input = new String[]{"-L1s", "0", "-L1E", "2", "-L1b", "3", "-L2s", "1", "-L2E", "2", "-L2b", "3", "-t", "traces/test.trace"};
         ParseInput(input);
-//        InitializeCaches();
+        InitializeCaches();
+
+
+
+
+//        DataOutputStream ramModified = new DataOutputStream(new FileOutputStream("RAM.dat"));
+//       // ramModified.; //which offset we will write that data
+//        int sayi = Integer.parseInt("abe19",16);
+//        ramModified.
+//
+//        try {
+//            ramModified.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
 
         DataInputStream ram = new DataInputStream(new FileInputStream("RAM.dat"));
+        ram.skip(0x10);
+        String x  = Long.toHexString(ram.readLong());
+        System.out.println(x);
 
-        for (int i = 0; i < 20; i++) {
-
-            //x should have a hex value
-            String x =  Long.toHexString(ram.readLong());
-            System.out.println(x);
-        }
         try {
             ram.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+//    private static void readData
 
     private static void InitializeCaches() {
         int L1S = 1 << L1s;
@@ -38,19 +51,17 @@ public class CacheSimulator {
         l1DataCache = new Cache("L1 Data Cache");
         l1InstructionCache = new Cache("L1 Instruction Cache");
         l2Cache = new Cache("L2 Cache");
-        for (int j = 0; j < L1S; j++) {
-            l1DataCache.Append(new Set(j));
-            l1InstructionCache.Append(new Set(j));
-            for (int i = 0; i < L1E; i++) {
-                l1DataCache.getSets().get(j).Append(null);
-                l1InstructionCache.getSets().get(j).Append(null);
-            }
+
+        l1DataCache.CreateSet(L1S);
+        l1InstructionCache.CreateSet(L1S);
+        for(int i = 0; i < L1S; i++){
+            l1DataCache.getSets()[i].CreateLine(L1E);
+            l1InstructionCache.getSets()[i].CreateLine(L1E);
         }
-        for (int j = 0; j < L2S; j++) {
-            l2Cache.Append(new Set(j));
-            for (int i = 0; i < L2E; i++) {
-                l2Cache.getSets().get(j).Append(null);
-            }
+
+        l2Cache.CreateSet(L2S);
+        for(int i = 0; i < L2S; i++) {
+            l2Cache.getSets()[i].CreateLine(L2E);
         }
     }
 
