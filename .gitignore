@@ -1,4 +1,1 @@
-src/Cache.class
-src/Set.class
-src/Line.class
-src/CacheSimulator.class
+*.class
