@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class CacheSimulator {
 
@@ -27,19 +28,47 @@ public class CacheSimulator {
 //        }
 
 
-        DataInputStream ram = new DataInputStream(new FileInputStream("RAM.dat"));
-        ram.skip(0x10);
-        String x  = Long.toHexString(ram.readLong());
-        System.out.println(x);
+        //     DataInputStream ram = new DataInputStream(new FileInputStream("RAM.dat"));
+   //     ram.skip(0x10);
+   //     String x  = Long.toHexString(ram.readLong());
+   //     System.out.println(x);
+//
+//     try {
+//         ram.close();
+//     } catch (IOException e) {
+//         e.printStackTrace();
+//     }
 
-        try {
-            ram.close();
-        } catch (IOException e) {
+        try{
+            System.out.println(new String(ReadFromOffset("RAM.dat",0,18)));
+            WriteWithOffset("RAM.dat","dank memes are good",9);
+            System.out.println(new String(ReadFromOffset("RAM.dat",0,18)));
+        }catch (IOException e){
             e.printStackTrace();
         }
+
+
+
+
     }
 
 //    private static void readData
+
+    private static void WriteWithOffset(String FileName, String Data, int Position) throws IOException {
+            RandomAccessFile file = new RandomAccessFile(FileName,"rw");
+            file.seek(Position);
+            file.write(Data.getBytes());
+            file.close();
+    }
+
+    private static byte[] ReadFromOffset(String FileName, int Position,int Size) throws IOException{
+        RandomAccessFile file = new RandomAccessFile(FileName,"r");
+        file.seek(Position);
+        byte[] bytes = new byte[Size];
+        file.read(bytes);
+        file.close();
+        return bytes;
+    }
 
     private static void InitializeCaches() {
         int L1S = 1 << L1s;
