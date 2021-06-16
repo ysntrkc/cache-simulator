@@ -4,17 +4,15 @@ public class Line {
     private String tag;
     private String data;
     private int time;
-    private static int timer;
 
     public Line() {
     }
 
-    public Line(String tag, boolean valid, String data) {
+    public Line(String tag, boolean valid, String data, int time) {
         this.tag = tag;
         this.valid = valid;
         this.data = data;
-        timer++;
-        time = timer;
+        this.time = time;
     }
 
     public boolean isValid() {
@@ -45,9 +43,8 @@ public class Line {
         return time;
     }
 
-    public void setTime() {
-        timer++;
-        this.time = timer;
+    public void setTime(int time){
+        this.time = time;
     }
 
     @Override

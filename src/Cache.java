@@ -13,6 +13,7 @@ public class Cache {
         sets = new Set[size];
         for(int i = 0; i < size; i++){
             sets[i] = new Set();
+            sets[i].setIndex(i);
         }
     }
 

@@ -5,54 +5,138 @@ public class CacheSimulator {
 
     static int L1s = 0, L1E = 0, L1b = 0;
     static int L2s = 0, L2E = 0, L2b = 0;
-    static int hitCount = 0, missCount = 0;
+    static int L1IHitCount = 0, L1IMissCount = 0, L1IEvictionCount = 0;
+    static int L1DHitCount = 0, L1DMissCount = 0, L1DEvictionCount = 0;
+    static int L2HitCount = 0, L2MissCount = 0, L2EvictionCount = 0;
+    static int timeL1I = 0, timeL1D = 0, timeL2 = 0;
     static String traceFile;
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[] { "-L1s", "0", "-L1E", "2", "-L1b", "3", "-L2s", "1", "-L2E", "2", "-L2b", "3",
-                "-t", "test_large.trace" };
+        String[] input = new String[]{"-L1s", "2", "-L1E", "2", "-L1b", "4", "-L2s", "3", "-L2E", "2", "-L2b", "4",
+                "-t", "test_small.trace"};
         ParseInput(input);
         InitializeCaches();
 
         ReadTraceFile();
 
-        // DataOutputStream ramModified = new DataOutputStream(new
-        // FileOutputStream("RAM.dat"));
-        // // ramModified.; //which offset we will write that data
-        // int sayi = Integer.parseInt("abe19",16);
-        // ramModified.
-        //
-        // try {
-        // ramModified.close();
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
 
-        // DataInputStream ram = new DataInputStream(new FileInputStream("RAM.dat"));
-        // ram.skip(0x10);
-        // String x = Long.toHexString(ram.readLong());
-        // System.out.println(x);
-        //
-        // try {
-        // ram.close();
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
-
-
-        // try {
-        // System.out.println(new String(ReadFromOffset("RAM.dat", 0)));
-        // // WriteWithOffset("RAM.dat","dank memes are good",9);
-        // System.out.println(new String(ReadFromOffset("RAM.dat", 0x10)));
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
+        System.out.println();
 
     }
 
-    private static void InstructionLoad(String address, String size) {
+    private static void Load(String address, String size, boolean mode) throws IOException {
+        int addressHex = Integer.parseInt(address, 16);
 
+        String addressBin = Integer.toBinaryString(addressHex);
+        addressBin = ZeroExtend(addressBin);
+        String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
+        String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
+
+
+        String tag1 = addressArrForL1[0], setIndex1 = addressArrForL1[1], blockIndex1 = addressArrForL1[2];
+        String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1]; //, blockIndex2 = addressArrForL2[2];
+        int setI1, setI2;
+
+        setI1 = BinaryStringToDecimal(setIndex1);
+        setI2 = BinaryStringToDecimal(setIndex2);
+
+
+        String data = ReadFromOffset("RAM.dat", addressHex);
+
+        //L1 Instruction Cache
+        if (mode) {
+            for (int i = 0; i < L1E; i++) {
+                if (l1InstructionCache.getSets()[setI1].getLines()[i].isValid()) {
+                    if (l1InstructionCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
+                        //Look at Block
+                        L1IHitCount++;
+                        continue;
+                    }
+                    if (i == L1E - 1) {
+                        int minIndex = l1InstructionCache.getSets()[setI1].GetMinTime();
+                        Line newLine = new Line(tag1, true, data, ++timeL1I);
+                        l1InstructionCache.getSets()[setI1].setLinesIndex(newLine, minIndex);
+                        L1IEvictionCount++;
+                    }
+                } else {
+                    //Load instructions from RAM.
+                    Line newLine = new Line(tag1, true, data, ++timeL1I);
+                    l1InstructionCache.getSets()[setI1].setLinesIndex(newLine, i);
+                    L1IMissCount++;
+                    break;
+                }
+            }
+        } else {
+            //todo l1Data cache
+            for (int i = 0; i < L1E; i++) {
+                if (l1DataCache.getSets()[setI1].getLines()[i].isValid()) {
+                    if (l1DataCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
+                        //Look at Block
+                        L1DHitCount++;
+                        continue;
+                    }
+                    if (i == L1E - 1) {
+                        int minIndex = l1DataCache.getSets()[setI1].GetMinTime();
+                        Line newLine = new Line(tag1, true, data, ++timeL1D);
+                        l1DataCache.getSets()[setI1].setLinesIndex(newLine, minIndex);
+                        L1DEvictionCount++;
+                    }
+                } else {
+                    //Load instructions from RAM.
+                    Line newLine = new Line(tag1, true, data, ++timeL1D);
+                    l1DataCache.getSets()[setI1].setLinesIndex(newLine, i);
+                    L1DMissCount++;
+                    break;
+                }
+            }
+        }
+        //L2 Cache
+        for (int i = 0; i < L2E; i++) {
+            if (l2Cache.getSets()[setI2].getLines()[i].isValid()) {
+                if (l2Cache.getSets()[setI2].getLines()[i].getTag().equals(tag2)) {
+                    //Look at Block
+                    L2HitCount++;
+                    continue;
+                }
+                if (i == L2E - 1) {
+                    int minIndex = l2Cache.getSets()[setI2].GetMinTime();
+                    Line newLine = new Line(tag2, true, data, ++timeL2);
+                    l2Cache.getSets()[setI2].setLinesIndex(newLine, minIndex);
+                    L2EvictionCount++;
+                }
+            } else {
+                //Load instructions from RAM.
+                Line newLine = new Line(tag2, true, data, ++timeL2);
+                l2Cache.getSets()[setI2].setLinesIndex(newLine, i);
+                L2MissCount++;
+                break;
+            }
+        }
+    }
+
+    private static int BinaryStringToDecimal(String str) {
+        if (str.equals(""))
+            return 0;
+        return Integer.parseInt(str, 2);
+    }
+
+    private static String[] ParseAddress(String addressBin, int cacheSetIndex, int cacheBlockIndex) {
+        String[] addressArr = new String[3];
+
+        addressArr[0] = addressBin.substring(0, addressBin.length() - (cacheBlockIndex + cacheSetIndex));
+        addressArr[1] = addressBin.substring(addressArr[0].length(), addressArr[0].length() + cacheSetIndex);
+        addressArr[2] = addressBin.substring(addressArr[0].length() + addressArr[1].length(), addressArr[0].length() + addressArr[1].length() + cacheBlockIndex);
+
+        return addressArr;
+    }
+
+    private static String ZeroExtend(String address) {
+        StringBuilder addressBuilder = new StringBuilder(address);
+        for (int i = addressBuilder.length(); i < 32; i++) {
+            addressBuilder.insert(0, "0");
+        }
+        return addressBuilder.toString();
     }
 
     private static void ReadTraceFile() throws IOException {
@@ -62,34 +146,25 @@ public class CacheSimulator {
                 char operation = sc.next().charAt(0);
                 String line = sc.nextLine();
                 String[] lineArr = line.split(", ");
-                String address = "0x" + lineArr[0].replaceAll("\\s+", "");
-                String size = "0x" + lineArr[1];
+                String address = lineArr[0].replaceAll("\\s+", "");
+                String size = lineArr[1];
 
                 switch (operation) {
-                    case 'I' -> {
-                        System.out.printf("Instruction Load Address:%s\tSize:%s", address, size);
-                        System.out.println();
-                        // call InsLoad
-                    }
-                    case 'L' -> {
-                        System.out.printf("Data Load Address:%s\tSize:%s", address, size);
-                        System.out.println();
-                        // call DataLoad
-                    }
+                    case 'I' -> Load(address, size, true);
+                    case 'L' -> Load(address, size, false);
                     case 'M' -> {
-                        String data = "0x" + lineArr[2];
-                        System.out.printf("Data Modify Address:%s\tSize:%s\tData:%s", address, size, data);
-                        System.out.println();
+//                        String data = "0x" + lineArr[2];
+//                        System.out.printf("Data Modify Address:%s\tSize:%s\tData:%s", address, size, data);
+//                        System.out.println();
                         // call Data Modify
                     }
                     case 'S' -> {
-                        String data = "0x" + lineArr[2];
-                        System.out.printf("Data Store Address:%s\tSize:%s\tData:%s", address, size, data);
-                        System.out.println();
+//                        String data = "0x" + lineArr[2];
+//                        System.out.printf("Data Store Address:%s\tSize:%s\tData:%s", address, size, data);
+//                        System.out.println();
                         // call data store
                     }
                 }
-
             }
             sc.close();
         } catch (FileNotFoundException e) {
@@ -97,10 +172,10 @@ public class CacheSimulator {
         }
     }
 
-    private static void WriteWithOffset(String FileName, String Data, int Position) throws IOException {
+    private static void WriteWithOffset(String FileName, String data, int Position) throws IOException {
         RandomAccessFile file = new RandomAccessFile(FileName, "rw");
         file.seek(Position);
-        file.write(Data.getBytes());
+        file.write(data.getBytes());
         file.close();
     }
 
