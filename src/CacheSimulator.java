@@ -1,73 +1,115 @@
 import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 public class CacheSimulator {
 
     static int L1s = 0, L1E = 0, L1b = 0;
     static int L2s = 0, L2E = 0, L2b = 0;
+    static int hitCount = 0, missCount = 0;
     static String traceFile;
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[]{"-L1s", "0", "-L1E", "2", "-L1b", "3", "-L2s", "1", "-L2E", "2", "-L2b", "3", "-t", "traces/test.trace"};
+        String[] input = new String[] { "-L1s", "0", "-L1E", "2", "-L1b", "3", "-L2s", "1", "-L2E", "2", "-L2b", "3",
+                "-t", "test_large.trace" };
         ParseInput(input);
         InitializeCaches();
 
+        ReadTraceFile();
+
+        // DataOutputStream ramModified = new DataOutputStream(new
+        // FileOutputStream("RAM.dat"));
+        // // ramModified.; //which offset we will write that data
+        // int sayi = Integer.parseInt("abe19",16);
+        // ramModified.
+        //
+        // try {
+        // ramModified.close();
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
+
+        // DataInputStream ram = new DataInputStream(new FileInputStream("RAM.dat"));
+        // ram.skip(0x10);
+        // String x = Long.toHexString(ram.readLong());
+        // System.out.println(x);
+        //
+        // try {
+        // ram.close();
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
 
 
+        // try {
+        // System.out.println(new String(ReadFromOffset("RAM.dat", 0)));
+        // // WriteWithOffset("RAM.dat","dank memes are good",9);
+        // System.out.println(new String(ReadFromOffset("RAM.dat", 0x10)));
+        // } catch (IOException e) {
+        // e.printStackTrace();
+        // }
 
-//        DataOutputStream ramModified = new DataOutputStream(new FileOutputStream("RAM.dat"));
-//       // ramModified.; //which offset we will write that data
-//        int sayi = Integer.parseInt("abe19",16);
-//        ramModified.
-//
-//        try {
-//            ramModified.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+    }
 
+    private static void InstructionLoad(String address, String size) {
 
-        //     DataInputStream ram = new DataInputStream(new FileInputStream("RAM.dat"));
-   //     ram.skip(0x10);
-   //     String x  = Long.toHexString(ram.readLong());
-   //     System.out.println(x);
-//
-//     try {
-//         ram.close();
-//     } catch (IOException e) {
-//         e.printStackTrace();
-//     }
+    }
 
-        try{
-            System.out.println(new String(ReadFromOffset("RAM.dat",0,18)));
-            WriteWithOffset("RAM.dat","dank memes are good",9);
-            System.out.println(new String(ReadFromOffset("RAM.dat",0,18)));
-        }catch (IOException e){
+    private static void ReadTraceFile() throws IOException {
+        try {
+            Scanner sc = new Scanner(new File("traces/" + traceFile));
+            while (sc.hasNextLine()) {
+                char operation = sc.next().charAt(0);
+                String line = sc.nextLine();
+                String[] lineArr = line.split(", ");
+                String address = "0x" + lineArr[0].replaceAll("\\s+", "");
+                String size = "0x" + lineArr[1];
+
+                switch (operation) {
+                    case 'I' -> {
+                        System.out.printf("Instruction Load Address:%s\tSize:%s", address, size);
+                        System.out.println();
+                        // call InsLoad
+                    }
+                    case 'L' -> {
+                        System.out.printf("Data Load Address:%s\tSize:%s", address, size);
+                        System.out.println();
+                        // call DataLoad
+                    }
+                    case 'M' -> {
+                        String data = "0x" + lineArr[2];
+                        System.out.printf("Data Modify Address:%s\tSize:%s\tData:%s", address, size, data);
+                        System.out.println();
+                        // call Data Modify
+                    }
+                    case 'S' -> {
+                        String data = "0x" + lineArr[2];
+                        System.out.printf("Data Store Address:%s\tSize:%s\tData:%s", address, size, data);
+                        System.out.println();
+                        // call data store
+                    }
+                }
+
+            }
+            sc.close();
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-
-
-
     }
-
-//    private static void readData
 
     private static void WriteWithOffset(String FileName, String Data, int Position) throws IOException {
-            RandomAccessFile file = new RandomAccessFile(FileName,"rw");
-            file.seek(Position);
-            file.write(Data.getBytes());
-            file.close();
+        RandomAccessFile file = new RandomAccessFile(FileName, "rw");
+        file.seek(Position);
+        file.write(Data.getBytes());
+        file.close();
     }
 
-    private static byte[] ReadFromOffset(String FileName, int Position,int Size) throws IOException{
-        RandomAccessFile file = new RandomAccessFile(FileName,"r");
+    private static String ReadFromOffset(String FileName, int Position) throws IOException {
+        RandomAccessFile file = new RandomAccessFile(FileName, "r");
         file.seek(Position);
-        byte[] bytes = new byte[Size];
-        file.read(bytes);
+        String x = Long.toHexString(file.readLong());
         file.close();
-        return bytes;
+        return x;
     }
 
     private static void InitializeCaches() {
@@ -83,13 +125,13 @@ public class CacheSimulator {
 
         l1DataCache.CreateSet(L1S);
         l1InstructionCache.CreateSet(L1S);
-        for(int i = 0; i < L1S; i++){
+        for (int i = 0; i < L1S; i++) {
             l1DataCache.getSets()[i].CreateLine(L1E);
             l1InstructionCache.getSets()[i].CreateLine(L1E);
         }
 
         l2Cache.CreateSet(L2S);
-        for(int i = 0; i < L2S; i++) {
+        for (int i = 0; i < L2S; i++) {
             l2Cache.getSets()[i].CreateLine(L2E);
         }
     }
@@ -126,4 +168,3 @@ public class CacheSimulator {
         System.exit(0);
     }
 }
-
