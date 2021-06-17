@@ -13,8 +13,8 @@ public class CacheSimulator {
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[]{"-L1s", "0", "-L1E", "5", "-L1b", "3", "-L2s", "0", "-L2E", "10", "-L2b", "3",
-                "-t", "test.trace"};
+        String[] input = new String[]{"-L1s", "0", "-L1E", "2", "-L1b", "3", "-L2s", "1", "-L2E", "2", "-L2b", "3",
+                "-t", "test_medium.trace"};
         ParseInput(input);
         InitializeCaches();
 
@@ -110,7 +110,7 @@ public class CacheSimulator {
                         int minIndex = l1InstructionCache.getSets()[setI1].GetMinTime();
                         Line newLine = new Line(tag1, true, data, ++timeL1I);
                         l1InstructionCache.getSets()[setI1].setLinesIndex(newLine, minIndex);
-                        L1IHitCount++;
+                        L1IMissCount++;
                         L1IEvictionCount++;
                         break;
                     }
@@ -135,7 +135,7 @@ public class CacheSimulator {
                         int minIndex = l1DataCache.getSets()[setI1].GetMinTime();
                         Line newLine = new Line(tag1, true, data, ++timeL1D);
                         l1DataCache.getSets()[setI1].setLinesIndex(newLine, minIndex);
-                        L1DHitCount++;
+                        L1DMissCount++;
                         L1DEvictionCount++;
                         break;
                     }
@@ -160,7 +160,7 @@ public class CacheSimulator {
                     int minIndex = l2Cache.getSets()[setI2].GetMinTime();
                     Line newLine = new Line(tag2, true, data, ++timeL2);
                     l2Cache.getSets()[setI2].setLinesIndex(newLine, minIndex);
-                    L2HitCount++;
+                    L2MissCount++;
                     L2EvictionCount++;
                     break;
                 }
