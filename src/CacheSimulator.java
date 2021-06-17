@@ -13,8 +13,8 @@ public class CacheSimulator {
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[]{"-L1s", "2", "-L1E", "2", "-L1b", "4", "-L2s", "3", "-L2E", "2", "-L2b", "4",
-                "-t", "test_small.trace"};
+        String[] input = new String[]{"-L1s", "4", "-L1E", "10", "-L1b", "4", "-L2s", "5", "-L2E", "10", "-L2b", "4",
+                "-t", "test_medium.trace"};
         ParseInput(input);
         InitializeCaches();
 
@@ -23,6 +23,62 @@ public class CacheSimulator {
 
         System.out.println();
 
+    }
+
+    private static void Store(String address, String size, String data) throws IOException {
+        int addressHex = Integer.parseInt(address, 16);
+
+        String addressBin = Integer.toBinaryString(addressHex);
+        addressBin = ZeroExtend(addressBin);
+        String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
+        String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
+
+
+        String tag1 = addressArrForL1[0], setIndex1 = addressArrForL1[1], blockIndex1 = addressArrForL1[2];
+        String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1], blockIndex2 = addressArrForL2[2];
+        int setI1, setI2;
+
+        setI1 = BinaryStringToDecimal(setIndex1);
+        setI2 = BinaryStringToDecimal(setIndex2);
+
+        //this represents the hex strings to skip.
+        int blockI1 = BinaryStringToDecimal(blockIndex1) * 2;
+        int blockI2 = BinaryStringToDecimal(blockIndex2) * 2;
+
+        int sizeI = Integer.parseInt(size) * 2;
+
+        for (int i = 0; i < L1E; i++) {
+            if (l1DataCache.getSets()[setI1].getLines()[i].isValid()) {
+                if (l1DataCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
+                    String temp = l1DataCache.getSets()[setI1].getLines()[i].getData();
+                    temp = temp.substring(0, blockI1) + data + temp.substring(blockI1 + sizeI);
+                    l1DataCache.getSets()[setI1].getLines()[i].setData(temp);
+                    L1DHitCount++;
+                    break;
+                }
+            } else {
+                L1DMissCount++;
+                break;
+            }
+        }
+
+        for (int i = 0; i < L2E; i++) {
+            if (l2Cache.getSets()[setI2].getLines()[i].isValid()) {
+                if (l2Cache.getSets()[setI2].getLines()[i].getTag().equals(tag2)) {
+                    String temp = l2Cache.getSets()[setI2].getLines()[i].getData();
+                    temp = temp.substring(0, blockI2) + data + temp.substring(blockI2 + sizeI);
+                    l2Cache.getSets()[setI2].getLines()[i].setData(temp);
+                    L2HitCount++;
+                    break;
+                }
+            } else {
+                L2MissCount++;
+                break;
+            }
+        }
+        String dataTemp = ReadFromOffset("RAM.dat", addressHex);
+        dataTemp = dataTemp.substring(0, blockI2) + data + dataTemp.substring(blockI2 + sizeI);
+        WriteWithOffset(dataTemp, addressHex);
     }
 
     private static void Load(String address, String size, boolean mode) throws IOException {
@@ -35,12 +91,11 @@ public class CacheSimulator {
 
 
         String tag1 = addressArrForL1[0], setIndex1 = addressArrForL1[1], blockIndex1 = addressArrForL1[2];
-        String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1]; //, blockIndex2 = addressArrForL2[2];
+        String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1], blockIndex2 = addressArrForL2[2];
         int setI1, setI2;
 
         setI1 = BinaryStringToDecimal(setIndex1);
         setI2 = BinaryStringToDecimal(setIndex2);
-
 
         String data = ReadFromOffset("RAM.dat", addressHex);
 
@@ -51,13 +106,15 @@ public class CacheSimulator {
                     if (l1InstructionCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
                         //Look at Block
                         L1IHitCount++;
-                        continue;
+                        break;
                     }
                     if (i == L1E - 1) {
                         int minIndex = l1InstructionCache.getSets()[setI1].GetMinTime();
                         Line newLine = new Line(tag1, true, data, ++timeL1I);
                         l1InstructionCache.getSets()[setI1].setLinesIndex(newLine, minIndex);
+                        L1IHitCount++;
                         L1IEvictionCount++;
+                        break;
                     }
                 } else {
                     //Load instructions from RAM.
@@ -74,13 +131,15 @@ public class CacheSimulator {
                     if (l1DataCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
                         //Look at Block
                         L1DHitCount++;
-                        continue;
+                        break;
                     }
                     if (i == L1E - 1) {
                         int minIndex = l1DataCache.getSets()[setI1].GetMinTime();
                         Line newLine = new Line(tag1, true, data, ++timeL1D);
                         l1DataCache.getSets()[setI1].setLinesIndex(newLine, minIndex);
+                        L1DHitCount++;
                         L1DEvictionCount++;
+                        break;
                     }
                 } else {
                     //Load instructions from RAM.
@@ -97,13 +156,15 @@ public class CacheSimulator {
                 if (l2Cache.getSets()[setI2].getLines()[i].getTag().equals(tag2)) {
                     //Look at Block
                     L2HitCount++;
-                    continue;
+                    break;
                 }
                 if (i == L2E - 1) {
                     int minIndex = l2Cache.getSets()[setI2].GetMinTime();
                     Line newLine = new Line(tag2, true, data, ++timeL2);
                     l2Cache.getSets()[setI2].setLinesIndex(newLine, minIndex);
+                    L2HitCount++;
                     L2EvictionCount++;
+                    break;
                 }
             } else {
                 //Load instructions from RAM.
@@ -153,16 +214,11 @@ public class CacheSimulator {
                     case 'I' -> Load(address, size, true);
                     case 'L' -> Load(address, size, false);
                     case 'M' -> {
-//                        String data = "0x" + lineArr[2];
-//                        System.out.printf("Data Modify Address:%s\tSize:%s\tData:%s", address, size, data);
-//                        System.out.println();
-                        // call Data Modify
+
                     }
                     case 'S' -> {
-//                        String data = "0x" + lineArr[2];
-//                        System.out.printf("Data Store Address:%s\tSize:%s\tData:%s", address, size, data);
-//                        System.out.println();
-                        // call data store
+                        String data = lineArr[2];
+                        Store(address, size, data);
                     }
                 }
             }
@@ -172,10 +228,11 @@ public class CacheSimulator {
         }
     }
 
-    private static void WriteWithOffset(String FileName, String data, int Position) throws IOException {
-        RandomAccessFile file = new RandomAccessFile(FileName, "rw");
+    private static void WriteWithOffset(String data, int Position) throws IOException {
+        RandomAccessFile file = new RandomAccessFile("RAM.dat", "rw");
         file.seek(Position);
-        file.write(data.getBytes());
+        long data1 = Long.parseLong(data,16);
+        file.writeLong(data1);
         file.close();
     }
 
