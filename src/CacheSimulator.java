@@ -13,26 +13,24 @@ public class CacheSimulator {
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[]{"-L1s", "4", "-L1E", "10", "-L1b", "4", "-L2s", "5", "-L2E", "10", "-L2b", "4",
-                "-t", "test_medium.trace"};
+        String[] input = new String[]{"-L1s", "0", "-L1E", "5", "-L1b", "3", "-L2s", "0", "-L2E", "10", "-L2b", "3",
+                "-t", "test.trace"};
         ParseInput(input);
         InitializeCaches();
 
         ReadTraceFile();
 
-
+        PrintScores();
         System.out.println();
-
     }
 
     private static void Store(String address, String size, String data) throws IOException {
         int addressHex = Integer.parseInt(address, 16);
 
         String addressBin = Integer.toBinaryString(addressHex);
-        addressBin = ZeroExtend(addressBin);
+        addressBin = ZeroExtend(addressBin, 32);
         String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
         String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
-
 
         String tag1 = addressArrForL1[0], setIndex1 = addressArrForL1[1], blockIndex1 = addressArrForL1[2];
         String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1], blockIndex2 = addressArrForL2[2];
@@ -76,7 +74,7 @@ public class CacheSimulator {
                 break;
             }
         }
-        String dataTemp = ReadFromOffset("RAM.dat", addressHex);
+        String dataTemp = ReadFromOffset(addressHex);
         dataTemp = dataTemp.substring(0, blockI2) + data + dataTemp.substring(blockI2 + sizeI);
         WriteWithOffset(dataTemp, addressHex);
     }
@@ -85,7 +83,7 @@ public class CacheSimulator {
         int addressHex = Integer.parseInt(address, 16);
 
         String addressBin = Integer.toBinaryString(addressHex);
-        addressBin = ZeroExtend(addressBin);
+        addressBin = ZeroExtend(addressBin, 32);
         String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
         String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
 
@@ -97,7 +95,7 @@ public class CacheSimulator {
         setI1 = BinaryStringToDecimal(setIndex1);
         setI2 = BinaryStringToDecimal(setIndex2);
 
-        String data = ReadFromOffset("RAM.dat", addressHex);
+        String data = ReadFromOffset(addressHex);
 
         //L1 Instruction Cache
         if (mode) {
@@ -176,6 +174,12 @@ public class CacheSimulator {
         }
     }
 
+    private static void PrintScores() {
+        System.out.printf("L1I-hits: %d  L1I-misses: %d  L1I-evictions: %d\n", L1IHitCount, L1IMissCount, L1IEvictionCount);
+        System.out.printf("L1D-hits: %d  L1D-misses: %d  L1D-evictions: %d\n", L1DHitCount, L1DMissCount, L1DEvictionCount);
+        System.out.printf("L2-hits: %d  L2-misses: %d  L2-evictions: %d\n", L2HitCount, L2MissCount, L2EvictionCount);
+    }
+
     private static int BinaryStringToDecimal(String str) {
         if (str.equals(""))
             return 0;
@@ -192,56 +196,66 @@ public class CacheSimulator {
         return addressArr;
     }
 
-    private static String ZeroExtend(String address) {
-        StringBuilder addressBuilder = new StringBuilder(address);
-        for (int i = addressBuilder.length(); i < 32; i++) {
+    private static String ZeroExtend(String str, int length) {
+        StringBuilder addressBuilder = new StringBuilder(str);
+        for (int i = addressBuilder.length(); i < length; i++) {
             addressBuilder.insert(0, "0");
         }
         return addressBuilder.toString();
     }
 
     private static void ReadTraceFile() throws IOException {
-        try {
-            Scanner sc = new Scanner(new File("traces/" + traceFile));
-            while (sc.hasNextLine()) {
-                char operation = sc.next().charAt(0);
-                String line = sc.nextLine();
-                String[] lineArr = line.split(", ");
-                String address = lineArr[0].replaceAll("\\s+", "");
-                String size = lineArr[1];
+        Scanner sc = new Scanner(new File("traces/" + traceFile));
+        while (sc.hasNextLine()) {
+            char operation = sc.next().charAt(0);
+            String line = sc.nextLine();
+            String[] lineArr = line.split(", ");
+            String address = lineArr[0].replaceAll("\\s+", "");
+            String size = lineArr[1];
 
-                switch (operation) {
-                    case 'I' -> Load(address, size, true);
-                    case 'L' -> Load(address, size, false);
-                    case 'M' -> {
-
-                    }
-                    case 'S' -> {
-                        String data = lineArr[2];
-                        Store(address, size, data);
-                    }
+            switch (operation) {
+                case 'I' -> {
+                    Load(address, size, true);
+                }
+                case 'L' -> {
+                    Load(address, size, false);
+                }
+                case 'M' -> {
+                    String data = lineArr[2];
+                    Store(address, size, data);
+                    Load(address, size, false);
+                }
+                case 'S' -> {
+                    String data = lineArr[2];
+                    Store(address, size, data);
                 }
             }
-            sc.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
+        sc.close();
     }
 
     private static void WriteWithOffset(String data, int Position) throws IOException {
         RandomAccessFile file = new RandomAccessFile("RAM.dat", "rw");
         file.seek(Position);
-        long data1 = Long.parseLong(data,16);
-        file.writeLong(data1);
+
+        StringBuilder dataHolder = new StringBuilder();
+        char[] charArray = data.toCharArray();
+        for (int i = 0; i < charArray.length; i = i + 2) {
+            String str = "" + charArray[i] + "" + charArray[i + 1];
+            char ch = (char) Integer.parseInt(str, 16);
+            dataHolder.append(ch);
+        }
+
+        file.writeBytes(dataHolder.toString());
         file.close();
     }
 
-    private static String ReadFromOffset(String FileName, int Position) throws IOException {
-        RandomAccessFile file = new RandomAccessFile(FileName, "r");
+    private static String ReadFromOffset(int Position) throws IOException {
+        RandomAccessFile file = new RandomAccessFile("RAM.dat", "r");
         file.seek(Position);
         String x = Long.toHexString(file.readLong());
         file.close();
-        return x;
+        return ZeroExtend(x, 16);
     }
 
     private static void InitializeCaches() {
