@@ -310,9 +310,9 @@ public class CacheSimulator {
                         thirdLine += "Place in L2 set " + setI2;
                     }
                     if (L1s == 0) {
-                        thirdLine += ", L1I\n";
+                        thirdLine += ", L1D\n";
                     } else {
-                        thirdLine += ", L1I set " + setI1 + "\n";
+                        thirdLine += ", L1D set " + setI1 + "\n";
                     }
 
                 }
@@ -349,9 +349,9 @@ public class CacheSimulator {
                         thirdLine += "Place in L2 set " + setI2;
                     }
                     if (L1s == 0) {
-                        thirdLine += ", L1I\n\t";
+                        thirdLine += ", L1D\n\t";
                     } else {
-                        thirdLine += ", L1I set " + setI1 + "\n\t";
+                        thirdLine += ", L1D set " + setI1 + "\n\t";
                     }
 
                     previousMissCountD = L1DMissCount;
