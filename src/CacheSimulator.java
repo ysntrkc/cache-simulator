@@ -3,6 +3,8 @@
 // Yusuf Taha ATALAY 150119040
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class CacheSimulator {
@@ -17,9 +19,12 @@ public class CacheSimulator {
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[]{"-L1s", "2", "-L1E", "4", "-L1b", "4", "-L2s", "3", "-L2E", "4", "-L2b", "4",
-                "-t", "traces/test_medium.trace"};
-        ParseInput(input);
+        Files.deleteIfExists(Paths.get("ModifiedRAM.dat"));
+        File source = new File("RAM.dat");
+        File dest = new File("ModifiedRAM.dat");
+        Files.copy(source.toPath(), dest.toPath());
+
+        ParseInput(args);
         InitializeCaches();
 
         ReadTraceFile();
@@ -263,14 +268,14 @@ public class CacheSimulator {
 
                     int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
                     int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
-                    if(L2s == 0){
+                    if (L2s == 0) {
                         thirdLine += "Place in L2 ,";
-                    }else{
+                    } else {
                         thirdLine += "Place in L2 set " + setI2;
                     }
-                    if(L1s == 0){
+                    if (L1s == 0) {
                         thirdLine += ", L1I\n";
-                    }else {
+                    } else {
                         thirdLine += ", L1I set " + setI1 + "\n";
                     }
                 }
@@ -299,14 +304,14 @@ public class CacheSimulator {
 
                     int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
                     int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
-                    if(L2s == 0){
+                    if (L2s == 0) {
                         thirdLine += "Place in L2 ,";
-                    }else{
+                    } else {
                         thirdLine += "Place in L2 set " + setI2;
                     }
-                    if(L1s == 0){
+                    if (L1s == 0) {
                         thirdLine += ", L1I\n";
-                    }else {
+                    } else {
                         thirdLine += ", L1I set " + setI1 + "\n";
                     }
 
@@ -338,14 +343,14 @@ public class CacheSimulator {
                     int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
                     int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
 
-                    if(L2s == 0){
+                    if (L2s == 0) {
                         thirdLine += "Place in L2 ,";
-                    }else{
+                    } else {
                         thirdLine += "Place in L2 set " + setI2;
                     }
-                    if(L1s == 0){
+                    if (L1s == 0) {
                         thirdLine += ", L1I\n\t";
-                    }else {
+                    } else {
                         thirdLine += ", L1I set " + setI1 + "\n\t";
                     }
 
@@ -402,7 +407,7 @@ public class CacheSimulator {
     }
 
     private static void WriteWithOffset(String data, int Position) throws IOException {
-        RandomAccessFile file = new RandomAccessFile("RAM.dat", "rw");
+        RandomAccessFile file = new RandomAccessFile("ModifiedRAM.dat", "rw");
         file.seek(Position);
 
         StringBuilder dataHolder = new StringBuilder();
@@ -418,7 +423,7 @@ public class CacheSimulator {
     }
 
     private static String ReadFromOffset(int Position) throws IOException {
-        RandomAccessFile file = new RandomAccessFile("RAM.dat", "r");
+        RandomAccessFile file = new RandomAccessFile("ModifiedRAM.dat", "r");
         file.seek(Position);
         String x = Long.toHexString(file.readLong());
         file.close();

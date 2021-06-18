@@ -1,86 +1,86 @@
 Cache type=L1 Instruction Cache
 [	Set index=0
 [		Line
-			tag=000003d3
-			time=41
+			tag=00000329
+			time=3915
 			valid=true
-			data=b8c9734ea3e0aa5c
+			data=4be4356d067d5620
 , 		Line
-			tag=0000033d
-			time=33
+			tag=000001f1
+			time=3921
 			valid=true
-			data=81f2da3cae8c5a63
+			data=4ac97c1f85199524
 , 		Line
-			tag=000001c2
-			time=35
+			tag=00000224
+			time=3912
 			valid=true
-			data=3048cf026d6e0a31
+			data=172ccf6e21a94b25
 , 		Line
-			tag=000000ae
-			time=38
+			tag=00000290
+			time=3913
 			valid=true
-			data=30a9b817f96d3412
+			data=61c9f754f08ae87c
 ], 	Set index=1
 [		Line
-			tag=000000dc
-			time=37
+			tag=00000100
+			time=3918
 			valid=true
-			data=95880a682053936b
+			data=da059003d8b6eb46
 , 		Line
-			tag=00000323
-			time=27
+			tag=00000371
+			time=3906
 			valid=true
-			data=68ded204d92f724c
+			data=5b0988248f21c801
 , 		Line
-			tag=000002d0
-			time=29
+			tag=00000109
+			time=3908
 			valid=true
-			data=8cea7b43da897455
+			data=aa85574eac082404
 , 		Line
-			tag=00000106
-			time=32
+			tag=000001e1
+			time=3911
 			valid=true
-			data=0bec5c7b371abd55
+			data=a066557e399e6f6a
 ], 	Set index=2
 [		Line
-			tag=0000029d
-			time=30
+			tag=00000035
+			time=3919
 			valid=true
-			data=191f673045073901
+			data=31b3050863140a06
 , 		Line
-			tag=00000377
-			time=23
+			tag=0000027d
+			time=3920
 			valid=true
-			data=cdf171269834cb57
+			data=9992721c545e0c0b
 , 		Line
-			tag=000002e4
-			time=25
+			tag=00000055
+			time=3916
 			valid=true
-			data=ae33310ebef59e6d
+			data=05c4525e47644800
 , 		Line
-			tag=00000143
-			time=26
+			tag=000000d5
+			time=3917
 			valid=true
-			data=fa6ecf3612b3cc0a
+			data=de9439290822f059
 ], 	Set index=3
 [		Line
-			tag=0000037b
-			time=39
+			tag=0000039c
+			time=3901
 			valid=true
-			data=866bb15d65d1c26b
+			data=46cba00c7e6e693d
 , 		Line
-			tag=00000186
-			time=40
+			tag=00000260
+			time=3902
 			valid=true
-			data=36a77b6a5b904561
+			data=c31e7617a30e0f4f
 , 		Line
-			tag=00000274
-			time=34
+			tag=000001cf
+			time=3905
 			valid=true
-			data=6bb28c3878f0c601
+			data=71500700e7414727
 , 		Line
-			tag=00000051
-			time=36
+			tag=00000385
+			time=3914
 			valid=true
-			data=dc4af9715ab1ff27
+			data=d379d443e5622877
 ]]

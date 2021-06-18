@@ -1,170 +1,170 @@
 Cache type=L2 Cache
 [	Set index=0
 [		Line
-			tag=000000e1
-			time=78
+			tag=00000148
+			time=7952
 			valid=true
-			data=3048cf026d6e0a31
+			data=61c9f754f08ae87c
 , 		Line
-			tag=00000057
-			time=83
+			tag=000006ae
+			time=7955
 			valid=true
-			data=30a9b817f96d3412
+			data=886c7b654517903c
 , 		Line
-			tag=00000172
-			time=62
+			tag=0000012d
+			time=7967
 			valid=true
-			data=70aaee65bc6e6971
+			data=c6983d05e2434949
 , 		Line
-			tag=00001b5a
-			time=69
+			tag=00000112
+			time=7950
 			valid=true
-			data=5a8cec00c6b7261f
+			data=172ccf6e21a94b25
 ], 	Set index=1
 [		Line
-			tag=00000083
-			time=70
+			tag=000001c5
+			time=7927
 			valid=true
-			data=0bec5c7b371abd55
+			data=ccd0cb562c7bfa70
 , 		Line
-			tag=000014e8
-			time=72
+			tag=0000154e
+			time=7951
 			valid=true
-			data=dec0962ee886f458
+			data=7d3a6e50f16b1856
 , 		Line
-			tag=0000006e
-			time=82
+			tag=000006a3
+			time=7961
 			valid=true
-			data=95880a682053936b
+			data=5e5a9f54e862cd02
 , 		Line
-			tag=00000168
-			time=64
+			tag=00000080
+			time=7968
 			valid=true
-			data=8cea7b43da897455
+			data=da059003d8b6eb46
 ], 	Set index=2
 [		Line
-			tag=00000b33
-			time=58
+			tag=000011f9
+			time=7964
 			valid=true
-			data=e90e8c0f265be716
+			data=88072d59499ae35e
 , 		Line
-			tag=00000172
-			time=59
+			tag=00000191
+			time=7943
 			valid=true
-			data=ae33310ebef59e6d
+			data=ed00011b02ae7648
 , 		Line
-			tag=000018a9
-			time=63
+			tag=000017c1
+			time=7957
 			valid=true
-			data=5125b3488339d271
+			data=a34c07ddba57187d
 , 		Line
-			tag=00001d1d
-			time=50
+			tag=0000184d
+			time=7963
 			valid=true
-			data=c430f62082313172
+			data=f5f04c5ebec57407
 ], 	Set index=3
 [		Line
-			tag=0000013a
-			time=77
+			tag=00000130
+			time=7937
 			valid=true
-			data=6bb28c3878f0c601
+			data=c31e7617a30e0f4f
 , 		Line
-			tag=000000c3
-			time=85
+			tag=00001538
+			time=7953
 			valid=true
-			data=36a77b6a5b904561
+			data=db43fa6e84a8c959
 , 		Line
-			tag=0000193d
-			time=66
+			tag=000019c4
+			time=7954
 			valid=true
-			data=6e8e423cdbd93e59
+			data=ea94df4933ee7206
 , 		Line
-			tag=00001615
-			time=74
+			tag=000002eb
+			time=7936
 			valid=true
-			data=7e51ff3a573f3406
+			data=cbb54172fe54c72d
 ], 	Set index=4
 [		Line
-			tag=000000bb
-			time=47
+			tag=00000194
+			time=7959
 			valid=true
-			data=910698477662853b
+			data=4be4356d067d5620
 , 		Line
-			tag=0000136f
-			time=71
+			tag=000000f8
+			time=7971
 			valid=true
-			data=81742b4adc46ce78
+			data=4ac97c1f85199524
 , 		Line
-			tag=0000019e
-			time=76
+			tag=00000c70
+			time=7948
 			valid=true
-			data=81f2da3cae8c5a63
+			data=4a12c5d5fdb7fb27
 , 		Line
-			tag=000001e9
-			time=86
+			tag=00000c50
+			time=7958
 			valid=true
-			data=b8c9734ea3e0aa5c
+			data=2459873f5544b43f
 ], 	Set index=5
 [		Line
-			tag=00000191
-			time=61
+			tag=00000084
+			time=7944
 			valid=true
-			data=68ded204d92f724c
+			data=aa85574eac082404
 , 		Line
-			tag=00000737
-			time=65
+			tag=000000f0
+			time=7947
 			valid=true
-			data=90325744ee9bf879
+			data=a066557e399e6f6a
 , 		Line
-			tag=000018dc
-			time=73
+			tag=00000f92
+			time=7949
 			valid=true
-			data=5759d351adac954d
+			data=1caff1065ff01658
 , 		Line
-			tag=000014f8
-			time=75
+			tag=000001b8
+			time=7941
 			valid=true
-			data=8c0c6637242ed10d
+			data=5b0988248f21c801
 ], 	Set index=6
 [		Line
-			tag=000001bb
-			time=55
+			tag=0000001a
+			time=7969
 			valid=true
-			data=cdf171269834cb57
+			data=31b3050863140a06
 , 		Line
-			tag=00001481
-			time=56
+			tag=0000013e
+			time=7970
 			valid=true
-			data=0b31df593729af1e
+			data=9992721c545e0c0b
 , 		Line
-			tag=000000a1
-			time=60
+			tag=0000006a
+			time=7962
 			valid=true
-			data=fa6ecf3612b3cc0a
+			data=de9439290822f059
 , 		Line
-			tag=0000014e
-			time=67
+			tag=000007f7
+			time=7965
 			valid=true
-			data=191f673045073901
+			data=8becea3eec9c2339
 ], 	Set index=7
 [		Line
-			tag=00000b26
-			time=79
+			tag=000019a1
+			time=7966
 			valid=true
-			data=b55d830b8ba12d0a
+			data=f82b7f29e89fd626
 , 		Line
-			tag=00000782
-			time=80
+			tag=000016f8
+			time=7928
 			valid=true
-			data=4f89d4b6c0f6ba11
+			data=03eb1d65db5b4037
 , 		Line
-			tag=00000028
-			time=81
+			tag=000000e7
+			time=7940
 			valid=true
-			data=dc4af9715ab1ff27
+			data=71500700e7414727
 , 		Line
-			tag=000001bd
-			time=84
+			tag=000001c2
+			time=7956
 			valid=true
-			data=866bb15d65d1c26b
+			data=d379d443e5622877
 ]]

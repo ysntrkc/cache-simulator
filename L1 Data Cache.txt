@@ -1,86 +1,86 @@
 Cache type=L1 Data Cache
 [	Set index=0
 [		Line
-			tag=000026df
-			time=39
+			tag=000018a1
+			time=4039
 			valid=true
-			data=81742b4adc46ce78
+			data=2459873f5544b43f
 , 		Line
-			tag=00000afd
-			time=28
+			tag=0000025a
+			time=4045
 			valid=true
-			data=8e4ce1143ed9f96c
+			data=c6983d05e2434949
 , 		Line
-			tag=000031ac
-			time=29
+			tag=000018e1
+			time=4032
 			valid=true
-			data=1128f75f7c5eb423
+			data=4a12c5d5fdb7fb27
 , 		Line
-			tag=000036b4
-			time=38
+			tag=00000d5c
+			time=4037
 			valid=true
-			data=5a8cec00c6b7261f
+			data=886c7b654517903c
 ], 	Set index=1
 [		Line
-			tag=000031b9
-			time=41
+			tag=00000d46
+			time=4040
 			valid=true
-			data=5759d351adac954d
+			data=5e5a9f54e862cd02
 , 		Line
-			tag=000029f1
-			time=43
+			tag=00003524
+			time=4025
 			valid=true
-			data=8c0c6637242ed10d
+			data=d50a8f43ba8d4a77
 , 		Line
-			tag=00000e6f
-			time=36
+			tag=00001f25
+			time=4033
 			valid=true
-			data=90325744ee9bf879
+			data=1caff1065ff01658
 , 		Line
-			tag=000029d0
-			time=40
+			tag=00002a9c
+			time=4034
 			valid=true
-			data=dec0962ee886f458
+			data=7d3a6e50f16b1856
 ], 	Set index=2
 [		Line
-			tag=00001666
-			time=34
+			tag=00002f82
+			time=4038
 			valid=true
-			data=e90e8c0f265be716
+			data=a34c07ddba57187d
 , 		Line
-			tag=00003152
-			time=35
+			tag=0000309a
+			time=4041
 			valid=true
-			data=5125b3488339d271
+			data=f5f04c5ebec57407
 , 		Line
-			tag=000034cf
-			time=32
+			tag=000023f2
+			time=4042
 			valid=true
-			data=ec0bb920ba8a352d
+			data=88072d59499ae35e
 , 		Line
-			tag=00002903
-			time=33
+			tag=00000fef
+			time=4043
 			valid=true
-			data=0b31df593729af1e
+			data=8becea3eec9c2339
 ], 	Set index=3
 [		Line
-			tag=0000327a
-			time=37
+			tag=00003388
+			time=4036
 			valid=true
-			data=6e8e423cdbd93e59
+			data=ea94df4933ee7206
 , 		Line
-			tag=00002c2a
-			time=42
+			tag=00003343
+			time=4044
 			valid=true
-			data=7e51ff3a573f3406
+			data=f82b7f29e89fd626
 , 		Line
-			tag=0000164d
-			time=44
+			tag=000005d6
+			time=4030
 			valid=true
-			data=b55d830b8ba12d0a
+			data=cbb54172fe54c72d
 , 		Line
-			tag=00000f05
-			time=45
+			tag=00002a70
+			time=4035
 			valid=true
-			data=4f89d4b6c0f6ba11
+			data=db43fa6e84a8c959
 ]]
