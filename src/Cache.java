@@ -31,7 +31,6 @@ public class Cache {
 
     @Override
     public String toString() {
-        return "Cache type=" + type + "\n" +
-                "\tsets=" + Arrays.toString(sets) + "\n";
+        return "Cache type=" + type + "\n" + Arrays.toString(sets) + "\n";
     }
 }

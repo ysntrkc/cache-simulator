@@ -1,3 +1,7 @@
+// Yasin TARAKÇI 150118055
+// Ahmet Emre SAĞCAN 150119042
+// Yusuf Taha ATALAY 150119040
+
 import java.io.*;
 import java.util.Scanner;
 
@@ -13,15 +17,18 @@ public class CacheSimulator {
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
-        String[] input = new String[]{"-L1s", "0", "-L1E", "2", "-L1b", "3", "-L2s", "1", "-L2E", "2", "-L2b", "3",
-                "-t", "test_medium.trace"};
+        String[] input = new String[]{"-L1s", "2", "-L1E", "4", "-L1b", "4", "-L2s", "3", "-L2E", "4", "-L2b", "4",
+                "-t", "traces/test_medium.trace"};
         ParseInput(input);
         InitializeCaches();
 
         ReadTraceFile();
 
         PrintScores();
-        System.out.println();
+
+        WriteCaches(l1InstructionCache);
+        WriteCaches(l1DataCache);
+        WriteCaches(l2Cache);
     }
 
     private static void Store(String address, String size, String data) throws IOException {
@@ -32,12 +39,11 @@ public class CacheSimulator {
         String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
         String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
 
-        String tag1 = addressArrForL1[0], setIndex1 = addressArrForL1[1], blockIndex1 = addressArrForL1[2];
-        String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1], blockIndex2 = addressArrForL2[2];
-        int setI1, setI2;
+        String tag1 = addressArrForL1[0], blockIndex1 = addressArrForL1[2];
+        String tag2 = addressArrForL2[0], blockIndex2 = addressArrForL2[2];
 
-        setI1 = BinaryStringToDecimal(setIndex1);
-        setI2 = BinaryStringToDecimal(setIndex2);
+        int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
+        int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
 
         //this represents the hex strings to skip.
         int blockI1 = BinaryStringToDecimal(blockIndex1) * 2;
@@ -52,6 +58,10 @@ public class CacheSimulator {
                     temp = temp.substring(0, blockI1) + data + temp.substring(blockI1 + sizeI);
                     l1DataCache.getSets()[setI1].getLines()[i].setData(temp);
                     L1DHitCount++;
+                    break;
+                }
+                if (i == L1E - 1) {
+                    L1DMissCount++;
                     break;
                 }
             } else {
@@ -69,6 +79,10 @@ public class CacheSimulator {
                     L2HitCount++;
                     break;
                 }
+                if (i == L2E - 1) {
+                    L2MissCount++;
+                    break;
+                }
             } else {
                 L2MissCount++;
                 break;
@@ -79,7 +93,7 @@ public class CacheSimulator {
         WriteWithOffset(dataTemp, addressHex);
     }
 
-    private static void Load(String address, String size, boolean mode) throws IOException {
+    private static void Load(String address, boolean mode) throws IOException {
         int addressHex = Integer.parseInt(address, 16);
 
         String addressBin = Integer.toBinaryString(addressHex);
@@ -87,13 +101,10 @@ public class CacheSimulator {
         String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
         String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
 
+        String tag1 = addressArrForL1[0], tag2 = addressArrForL2[0];
 
-        String tag1 = addressArrForL1[0], setIndex1 = addressArrForL1[1], blockIndex1 = addressArrForL1[2];
-        String tag2 = addressArrForL2[0], setIndex2 = addressArrForL2[1], blockIndex2 = addressArrForL2[2];
-        int setI1, setI2;
-
-        setI1 = BinaryStringToDecimal(setIndex1);
-        setI2 = BinaryStringToDecimal(setIndex2);
+        int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
+        int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
 
         String data = ReadFromOffset(addressHex);
 
@@ -180,6 +191,11 @@ public class CacheSimulator {
         System.out.printf("L2-hits: %d  L2-misses: %d  L2-evictions: %d\n", L2HitCount, L2MissCount, L2EvictionCount);
     }
 
+    private static String BinaryStringToHexString(String binStr) {
+        long number = Long.parseLong(binStr, 2);
+        return ZeroExtend(Long.toHexString(number), 8);
+    }
+
     private static int BinaryStringToDecimal(String str) {
         if (str.equals(""))
             return 0;
@@ -193,6 +209,7 @@ public class CacheSimulator {
         addressArr[1] = addressBin.substring(addressArr[0].length(), addressArr[0].length() + cacheSetIndex);
         addressArr[2] = addressBin.substring(addressArr[0].length() + addressArr[1].length(), addressArr[0].length() + addressArr[1].length() + cacheBlockIndex);
 
+        addressArr[0] = BinaryStringToHexString(addressArr[0]);
         return addressArr;
     }
 
@@ -205,32 +222,182 @@ public class CacheSimulator {
     }
 
     private static void ReadTraceFile() throws IOException {
-        Scanner sc = new Scanner(new File("traces/" + traceFile));
+        Scanner sc = new Scanner(new File(traceFile));
+        FileWriter fileWriter = new FileWriter("tracesLogs.txt");
+        PrintWriter printWriter = new PrintWriter(fileWriter);
+
         while (sc.hasNextLine()) {
+
             char operation = sc.next().charAt(0);
             String line = sc.nextLine();
             String[] lineArr = line.split(", ");
             String address = lineArr[0].replaceAll("\\s+", "");
             String size = lineArr[1];
+            String secondLine = "", thirdLine = "", fourthLine = "", fifthLine = "";
+
+            printWriter.print(operation + " " + line + "\n\t");
 
             switch (operation) {
                 case 'I' -> {
-                    Load(address, size, true);
+                    int previousMissCountI = L1IMissCount;
+                    int previousMissCount2 = L2MissCount;
+                    Load(address, true);
+
+                    if (previousMissCountI == L1IMissCount) {
+                        secondLine += "L1I hit, ";
+                    } else {
+                        secondLine += "L1I miss, ";
+                    }
+
+                    if (previousMissCount2 == L2MissCount) {
+                        secondLine += "L2 hit\n\t";
+                    } else {
+                        secondLine += "L2 miss\n\t";
+                    }
+                    int addressHex = Integer.parseInt(address, 16);
+
+                    String addressBin = Integer.toBinaryString(addressHex);
+                    addressBin = ZeroExtend(addressBin, 32);
+                    String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
+                    String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
+
+                    int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
+                    int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
+                    if(L2s == 0){
+                        thirdLine += "Place in L2 ,";
+                    }else{
+                        thirdLine += "Place in L2 set " + setI2;
+                    }
+                    if(L1s == 0){
+                        thirdLine += ", L1I\n";
+                    }else {
+                        thirdLine += ", L1I set " + setI1 + "\n";
+                    }
                 }
                 case 'L' -> {
-                    Load(address, size, false);
+                    int previousMissCountD = L1DMissCount;
+                    int previousMissCount2 = L2MissCount;
+                    Load(address, false);
+
+                    if (previousMissCountD == L1DMissCount) {
+                        secondLine += "L1D hit, ";
+                    } else {
+                        secondLine += "L1D miss, ";
+                    }
+
+                    if (previousMissCount2 == L2MissCount) {
+                        secondLine += "L2 hit\n\t";
+                    } else {
+                        secondLine += "L2 miss\n\t";
+                    }
+                    int addressHex = Integer.parseInt(address, 16);
+
+                    String addressBin = Integer.toBinaryString(addressHex);
+                    addressBin = ZeroExtend(addressBin, 32);
+                    String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
+                    String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
+
+                    int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
+                    int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
+                    if(L2s == 0){
+                        thirdLine += "Place in L2 ,";
+                    }else{
+                        thirdLine += "Place in L2 set " + setI2;
+                    }
+                    if(L1s == 0){
+                        thirdLine += ", L1I\n";
+                    }else {
+                        thirdLine += ", L1I set " + setI1 + "\n";
+                    }
+
                 }
                 case 'M' -> {
                     String data = lineArr[2];
+                    int previousMissCountD = L1DMissCount;
+                    int previousMissCount2 = L2MissCount;
+                    Load(address, false);
+
+                    if (previousMissCountD == L1DMissCount) {
+                        secondLine += "L1D hit, ";
+                    } else {
+                        secondLine += "L1D miss, ";
+                    }
+
+                    if (previousMissCount2 == L2MissCount) {
+                        secondLine += "L2 hit\n\t";
+                    } else {
+                        secondLine += "L2 miss\n\t";
+                    }
+                    int addressHex = Integer.parseInt(address, 16);
+
+                    String addressBin = Integer.toBinaryString(addressHex);
+                    addressBin = ZeroExtend(addressBin, 32);
+                    String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
+                    String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
+
+                    int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
+                    int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
+
+                    if(L2s == 0){
+                        thirdLine += "Place in L2 ,";
+                    }else{
+                        thirdLine += "Place in L2 set " + setI2;
+                    }
+                    if(L1s == 0){
+                        thirdLine += ", L1I\n\t";
+                    }else {
+                        thirdLine += ", L1I set " + setI1 + "\n\t";
+                    }
+
+                    previousMissCountD = L1DMissCount;
+                    previousMissCount2 = L2MissCount;
                     Store(address, size, data);
-                    Load(address, size, false);
+                    fifthLine += "Store in ";
+                    if (previousMissCountD == L1DMissCount) {
+                        fourthLine += "L1D hit, ";
+                        fifthLine += "L1D, ";
+                    } else {
+                        fourthLine += "L1D miss, ";
+                    }
+
+                    if (previousMissCount2 == L2MissCount) {
+                        fourthLine += "L2 hit\n\t";
+                        fifthLine += "L2, ";
+                    } else {
+                        fourthLine += "L2 miss\n\t";
+                    }
+                    fifthLine += "RAM\n";
                 }
                 case 'S' -> {
+                    int previousMissCountD = L1DMissCount;
+                    int previousMissCount2 = L2MissCount;
                     String data = lineArr[2];
                     Store(address, size, data);
+                    thirdLine += "Store in ";
+                    if (previousMissCountD == L1DMissCount) {
+                        secondLine += "L1D hit, ";
+                        thirdLine += "L1D, ";
+                    } else {
+                        secondLine += "L1D miss, ";
+                    }
+
+                    if (previousMissCount2 == L2MissCount) {
+                        secondLine += "L2 hit\n\t";
+                        thirdLine += "L2, ";
+                    } else {
+                        secondLine += "L2 miss\n\t";
+                    }
+                    thirdLine += "RAM\n";
                 }
             }
+            printWriter.print(secondLine);
+            printWriter.print(thirdLine);
+            if (operation == 'M') {
+                printWriter.print(fourthLine);
+                printWriter.print(fifthLine);
+            }
         }
+        printWriter.close();
         sc.close();
     }
 
@@ -258,12 +425,15 @@ public class CacheSimulator {
         return ZeroExtend(x, 16);
     }
 
+    private static void WriteCaches(Cache cache) throws IOException {
+        PrintWriter printWriter = new PrintWriter(new FileWriter(cache.getType() + ".txt"));
+        printWriter.print(cache);
+        printWriter.close();
+    }
+
     private static void InitializeCaches() {
         int L1S = 1 << L1s;
-        int L1B = 1 << L1b;
-
         int L2S = 1 << L2s;
-        int L2B = 1 << L2b;
 
         l1DataCache = new Cache("L1 Data Cache");
         l1InstructionCache = new Cache("L1 Instruction Cache");

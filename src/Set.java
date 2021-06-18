@@ -49,7 +49,6 @@ public class Set {
 
     @Override
     public String toString() {
-        return "Set index=" + index + "\n" +
-                "\t\tlines=" + Arrays.toString(lines);
+        return "\tSet index=" + index + "\n" + Arrays.toString(lines);
     }
 }

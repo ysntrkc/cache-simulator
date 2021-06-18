@@ -49,11 +49,11 @@ public class Line {
 
     @Override
     public String toString() {
-        return "Line \n" +
-                "\t\t\tvalid=" + valid + "\n" +
+        return "\t\tLine\n" +
                 "\t\t\ttag=" + tag + "\n" +
-                "\t\t\tdata" + data + "\n" +
-                "\t\t\ttime=" + time + "\n";
+                "\t\t\ttime=" + time + "\n" +
+                "\t\t\tvalid=" + valid + "\n" +
+                "\t\t\tdata=" + data + "\n";
     }
 }
 
