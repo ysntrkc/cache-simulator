@@ -19,6 +19,8 @@ public class CacheSimulator {
     static Cache l1DataCache, l1InstructionCache, l2Cache;
 
     public static void main(String[] args) throws IOException {
+
+        // We copied original RAM file to ModifiedRAM file in order to use the original one as much as we want without modifying it.
         Files.deleteIfExists(Paths.get("ModifiedRAM.dat"));
         File source = new File("RAM.dat");
         File dest = new File("ModifiedRAM.dat");
@@ -36,14 +38,17 @@ public class CacheSimulator {
         WriteCaches(l2Cache);
     }
 
+    // Store function handles the S operation by  writing the given data to given address adn checks if any of our
+    // 2 caches has that value already and arranges the miss&hit count accordingly
     private static void Store(String address, String size, String data) throws IOException {
+        // converts address to integer value in order to gather the tag,set and block bits out of it
         int addressHex = Integer.parseInt(address, 16);
 
         String addressBin = Integer.toBinaryString(addressHex);
         addressBin = ZeroExtend(addressBin, 32);
         String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
         String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
-
+        // Next 6 lines is for extracting the tag set and bit values out of the binary value of the address
         String tag1 = addressArrForL1[0], blockIndex1 = addressArrForL1[2];
         String tag2 = addressArrForL2[0], blockIndex2 = addressArrForL2[2];
 
@@ -55,7 +60,8 @@ public class CacheSimulator {
         int blockI2 = BinaryStringToDecimal(blockIndex2) * 2;
 
         int sizeI = Integer.parseInt(size) * 2;
-
+        // Making some control like , is the line has valid bit set ? or the tag value of the data inside of the line matches with the one that we are try to store
+        // and set the counters accordingly
         for (int i = 0; i < L1E; i++) {
             if (l1DataCache.getSets()[setI1].getLines()[i].isValid()) {
                 if (l1DataCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
@@ -74,7 +80,7 @@ public class CacheSimulator {
                 break;
             }
         }
-
+        // Do the same for the L2 cache
         for (int i = 0; i < L2E; i++) {
             if (l2Cache.getSets()[setI2].getLines()[i].isValid()) {
                 if (l2Cache.getSets()[setI2].getLines()[i].getTag().equals(tag2)) {
@@ -93,19 +99,23 @@ public class CacheSimulator {
                 break;
             }
         }
+        // Write the results to the corresponding files
         String dataTemp = ReadFromOffset(addressHex);
         dataTemp = dataTemp.substring(0, blockI2) + data + dataTemp.substring(blockI2 + sizeI);
         WriteWithOffset(dataTemp, addressHex);
     }
 
+    // Load function handles both instruction and data loading operations by managing the function with the "mode" parameter
+    // if the mode parameter set to false it handles Instruction Load operation and vice versa.
     private static void Load(String address, boolean mode) throws IOException {
         int addressHex = Integer.parseInt(address, 16);
 
         String addressBin = Integer.toBinaryString(addressHex);
+        // Zero extend the address for block alignment purposes
         addressBin = ZeroExtend(addressBin, 32);
         String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
         String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
-
+        // Gathering the tag and set bits from the address value
         String tag1 = addressArrForL1[0], tag2 = addressArrForL2[0];
 
         int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
@@ -113,7 +123,7 @@ public class CacheSimulator {
 
         String data = ReadFromOffset(addressHex);
 
-        //L1 Instruction Cache
+        // Load instruction for Instruction Cache
         if (mode) {
             for (int i = 0; i < L1E; i++) {
                 if (l1InstructionCache.getSets()[setI1].getLines()[i].isValid()) {
@@ -138,8 +148,9 @@ public class CacheSimulator {
                     break;
                 }
             }
-        } else {
-            //todo l1Data cache
+        }
+        // Load instruction for Data Cache
+        else {
             for (int i = 0; i < L1E; i++) {
                 if (l1DataCache.getSets()[setI1].getLines()[i].isValid()) {
                     if (l1DataCache.getSets()[setI1].getLines()[i].getTag().equals(tag1)) {
@@ -164,7 +175,7 @@ public class CacheSimulator {
                 }
             }
         }
-        //L2 Cache
+        //Since L2 cache is unified there is no segregation for Load Operation for L2 cache
         for (int i = 0; i < L2E; i++) {
             if (l2Cache.getSets()[setI2].getLines()[i].isValid()) {
                 if (l2Cache.getSets()[setI2].getLines()[i].getTag().equals(tag2)) {
@@ -190,47 +201,14 @@ public class CacheSimulator {
         }
     }
 
-    private static void PrintScores() {
-        System.out.printf("L1I-hits: %d  L1I-misses: %d  L1I-evictions: %d\n", L1IHitCount, L1IMissCount, L1IEvictionCount);
-        System.out.printf("L1D-hits: %d  L1D-misses: %d  L1D-evictions: %d\n", L1DHitCount, L1DMissCount, L1DEvictionCount);
-        System.out.printf("L2-hits: %d  L2-misses: %d  L2-evictions: %d\n", L2HitCount, L2MissCount, L2EvictionCount);
-    }
-
-    private static String BinaryStringToHexString(String binStr) {
-        long number = Long.parseLong(binStr, 2);
-        return ZeroExtend(Long.toHexString(number), 8);
-    }
-
-    private static int BinaryStringToDecimal(String str) {
-        if (str.equals(""))
-            return 0;
-        return Integer.parseInt(str, 2);
-    }
-
-    private static String[] ParseAddress(String addressBin, int cacheSetIndex, int cacheBlockIndex) {
-        String[] addressArr = new String[3];
-
-        addressArr[0] = addressBin.substring(0, addressBin.length() - (cacheBlockIndex + cacheSetIndex));
-        addressArr[1] = addressBin.substring(addressArr[0].length(), addressArr[0].length() + cacheSetIndex);
-        addressArr[2] = addressBin.substring(addressArr[0].length() + addressArr[1].length(), addressArr[0].length() + addressArr[1].length() + cacheBlockIndex);
-
-        addressArr[0] = BinaryStringToHexString(addressArr[0]);
-        return addressArr;
-    }
-
-    private static String ZeroExtend(String str, int length) {
-        StringBuilder addressBuilder = new StringBuilder(str);
-        for (int i = addressBuilder.length(); i < length; i++) {
-            addressBuilder.insert(0, "0");
-        }
-        return addressBuilder.toString();
-    }
-
+    // ReadTraceFile read the given .trace files line by line and for each line it makes the program behave accordingly.
+    // This function also creates and fills the tracelog file
     private static void ReadTraceFile() throws IOException {
         Scanner sc = new Scanner(new File(traceFile));
+        // Create the log file at the same level with the source code
         FileWriter fileWriter = new FileWriter("tracesLogs.txt");
         PrintWriter printWriter = new PrintWriter(fileWriter);
-
+        // For every line...
         while (sc.hasNextLine()) {
 
             char operation = sc.next().charAt(0);
@@ -241,9 +219,11 @@ public class CacheSimulator {
             String secondLine = "", thirdLine = "", fourthLine = "", fifthLine = "";
 
             printWriter.print(operation + " " + line + "\n\t");
-
+            // First character of every line denotes the operation
             switch (operation) {
+                // Instruction loading done here
                 case 'I' -> {
+                    // Hold the current Miss amount and compare it after the loading done to see if it changes
                     int previousMissCountI = L1IMissCount;
                     int previousMissCount2 = L2MissCount;
                     Load(address, true);
@@ -265,7 +245,7 @@ public class CacheSimulator {
                     addressBin = ZeroExtend(addressBin, 32);
                     String[] addressArrForL1 = ParseAddress(addressBin, L1s, L1b);
                     String[] addressArrForL2 = ParseAddress(addressBin, L2s, L2b);
-
+                    // Shape the string and then write it to log file
                     int setI1 = BinaryStringToDecimal(addressArrForL1[1]);
                     int setI2 = BinaryStringToDecimal(addressArrForL2[1]);
                     if (L2s == 0) {
@@ -280,6 +260,7 @@ public class CacheSimulator {
                     }
                 }
                 case 'L' -> {
+                    // Data loading done here
                     int previousMissCountD = L1DMissCount;
                     int previousMissCount2 = L2MissCount;
                     Load(address, false);
@@ -317,6 +298,7 @@ public class CacheSimulator {
 
                 }
                 case 'M' -> {
+                    // Modify operation simply calls Load and Store functions in order
                     String data = lineArr[2];
                     int previousMissCountD = L1DMissCount;
                     int previousMissCount2 = L2MissCount;
@@ -374,6 +356,7 @@ public class CacheSimulator {
                     fifthLine += "RAM\n";
                 }
                 case 'S' -> {
+                    // Storing operation done here
                     int previousMissCountD = L1DMissCount;
                     int previousMissCount2 = L2MissCount;
                     String data = lineArr[2];
@@ -406,6 +389,49 @@ public class CacheSimulator {
         sc.close();
     }
 
+    // This method adds 0 to the beginning of the given string until the size of the string reaches the given length.
+    private static String ZeroExtend(String str, int length) {
+        StringBuilder addressBuilder = new StringBuilder(str);
+        for (int i = addressBuilder.length(); i < length; i++) {
+            addressBuilder.insert(0, "0");
+        }
+        return addressBuilder.toString();
+    }
+
+    // PrintScore function prints the Miss, Hit and Eviction counts for every cache to terminal
+    private static void PrintScores() {
+        System.out.printf("L1I-hits: %d  L1I-misses: %d  L1I-evictions: %d\n", L1IHitCount, L1IMissCount, L1IEvictionCount);
+        System.out.printf("L1D-hits: %d  L1D-misses: %d  L1D-evictions: %d\n", L1DHitCount, L1DMissCount, L1DEvictionCount);
+        System.out.printf("L2-hits: %d  L2-misses: %d  L2-evictions: %d\n", L2HitCount, L2MissCount, L2EvictionCount);
+        System.out.println("ModifiedRAM.dat, L1_Data_Cache.txt, L1_Instruction_Cache.txt, L2_Cache.txt and tracesLogs.txt created.");
+    }
+
+    // BinaryStringToHexString converts given binary string to its Hex form after zero extension.
+    private static String BinaryStringToHexString(String binStr) {
+        long number = Long.parseLong(binStr, 2);
+        return ZeroExtend(Long.toHexString(number), 8);
+    }
+
+    // This method converts the binary string to decimal value. If string is empty method will return 0.
+    private static int BinaryStringToDecimal(String str) {
+        if (str.equals(""))
+            return 0;
+        return Integer.parseInt(str, 2);
+    }
+
+    // This method parses the address' binary format with respect to entered command line arguments.
+    private static String[] ParseAddress(String addressBin, int cacheSetIndex, int cacheBlockIndex) {
+        String[] addressArr = new String[3];
+
+        addressArr[0] = addressBin.substring(0, addressBin.length() - (cacheBlockIndex + cacheSetIndex));
+        addressArr[1] = addressBin.substring(addressArr[0].length(), addressArr[0].length() + cacheSetIndex);
+        addressArr[2] = addressBin.substring(addressArr[0].length() + addressArr[1].length(), addressArr[0].length() + addressArr[1].length() + cacheBlockIndex);
+
+        addressArr[0] = BinaryStringToHexString(addressArr[0]);
+        return addressArr;
+    }
+
+    // This method writes given data to RAM file to the specified position.
     private static void WriteWithOffset(String data, int Position) throws IOException {
         RandomAccessFile file = new RandomAccessFile("ModifiedRAM.dat", "rw");
         file.seek(Position);
@@ -422,6 +448,7 @@ public class CacheSimulator {
         file.close();
     }
 
+    // This method reads 16 digits from RAM file starting from the specified position.
     private static String ReadFromOffset(int Position) throws IOException {
         RandomAccessFile file = new RandomAccessFile("ModifiedRAM.dat", "r");
         file.seek(Position);
@@ -430,19 +457,22 @@ public class CacheSimulator {
         return ZeroExtend(x, 16);
     }
 
+    // This method writes caches to txt files with calling their toString methods.
     private static void WriteCaches(Cache cache) throws IOException {
         PrintWriter printWriter = new PrintWriter(new FileWriter(cache.getType() + ".txt"));
         printWriter.print(cache);
         printWriter.close();
     }
 
+    // This method creates caches and initializes them with respect to entered values.
+    // At first, lines are empty. When we read the trace files, we will fill them.
     private static void InitializeCaches() {
         int L1S = 1 << L1s;
         int L2S = 1 << L2s;
 
-        l1DataCache = new Cache("L1 Data Cache");
-        l1InstructionCache = new Cache("L1 Instruction Cache");
-        l2Cache = new Cache("L2 Cache");
+        l1DataCache = new Cache("L1_Data_Cache");
+        l1InstructionCache = new Cache("L1_Instruction_Cache");
+        l2Cache = new Cache("L2_Cache");
 
         l1DataCache.CreateSet(L1S);
         l1InstructionCache.CreateSet(L1S);
@@ -457,6 +487,7 @@ public class CacheSimulator {
         }
     }
 
+    // This method parses the command line argument and assigns the values to global variables.
     private static void ParseInput(String[] args) {
         if (args[0].equals("-L1s") && args[2].equals("-L1E") && args[4].equals("-L1b")) {
             L1s = Integer.parseInt(args[1]);
@@ -479,6 +510,7 @@ public class CacheSimulator {
         }
     }
 
+    // If the input format is false, the program throws this message.
     public static void FalseInput() {
         String inputFormat = """
                 -L1s <L1s> -L1E <L1E> -L1b <L1b>
