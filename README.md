@@ -1,11 +1,11 @@
 # Cache Simulator
 
-In order to run the simulation, you have to compile the cache simulator first.
+In order to run the simulation, you have to compile the cache simulator first:
 ```
 javac src/CacheSimulator.java
 ```
 
-Now we can use the cache simulator. The following command will run the cache simulator.
+Now we can use the cache simulator. The following command will run the cache simulator:
 ```
 java src/CacheSimulator -L1s <L1s> -L1E <L1E> -L1b <L1b> -L2s <L2s> -L2E <L2E> -L2b <L2b> -t traces/<trace_file_name>
 ```
