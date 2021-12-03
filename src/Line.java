@@ -1,6 +1,7 @@
 // Yasin TARAKÇI 150118055
 // Ahmet Emre SAĞCAN 150119042
 // Yusuf Taha ATALAY 150119040
+package src;
 
 public class Line {
 
@@ -60,4 +61,3 @@ public class Line {
                 "\t\t\tdata=" + data + "\n";
     }
 }
-

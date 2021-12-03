@@ -1,2 +1,7 @@
+/.idea
+/out
+/caches
+*.iml
+*.txt
 *.class
-RAM.dat
+ModifiedRAM.dat
